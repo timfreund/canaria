@@ -68,6 +68,25 @@ class Mine(Base):
     def set_coal_or_metal(self, c_or_m):
         self.coal = c_or_m == 'C'
 
+class Activity(Base):
+    __tablename__ = 'activity'
+    id = Column(Integer, primary_key=True)
+    year = Column(Integer, nullable=False)
+    mine_id = Column(Integer)
+    mine_name = Column(String(50))
+    state = Column(String(64))
+    county = Column(String(64))
+    basin = Column(String(64))
+    status = Column(String(24))
+    mine_type = Column(String(24))
+    company_type = Column(String(24))
+    operation = Column(String(24))
+    company_address = Column(String(64))
+    union = Column(String(64))
+    production = Column(Integer)
+    average_employees = Column(Integer)
+    labor_hours = Column(Integer)
+
 class Controller(Base):
     __tablename__ = 'controller'
     id = Column(String(7), primary_key=True)

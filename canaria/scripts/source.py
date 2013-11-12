@@ -5,6 +5,7 @@ import transaction
 import urllib2
 from canaria.scripts import usage, bootstrap_script_and_sqlalchemy
 from canaria.models import DBSession, Mine
+from canaria import models
 from datetime import datetime, date, timedelta
 
 from sqlalchemy import (
@@ -17,6 +18,22 @@ from sqlalchemy import (
     String,
     Text,
     )
+
+class ObjectImportContainer(object):
+    def __init__(self):
+        self.objs = {}
+
+    def __getitem__(self, key):
+        if not self.objs.has_key(key):
+            new_obj = getattr(models, key)()
+            self.objs[key] = new_obj
+        return self.objs[key]
+
+    def __setitem(self, key, value):
+        self.objs[key] = value
+
+    def values(self):
+        return self.objs.values()
 
 def download_sources(argv=sys.argv):
     settings, engine = bootstrap_script_and_sqlalchemy(argv)
@@ -63,7 +80,7 @@ def import_activities_file(settings, engine, tree):
     headers = []
     for datum in rows[3].findall('.//{urn:schemas-microsoft-com:office:spreadsheet}Data'):
         headers.append(datum.text)
-    for row in rows[4:6]:
+    for row in rows[4:]:
         values = [datum.text for datum in row.findall('.//{urn:schemas-microsoft-com:office:spreadsheet}Data')]
         activity = {}
         for k, v in zip(headers, values):
@@ -71,7 +88,7 @@ def import_activities_file(settings, engine, tree):
         import_activities_record(settings, engine, activity)
 
 def import_activities_record(settings, engine, activity):
-    pass
+    import_object(activity, activity_column_map)
 
 def import_mines(settings, engine):
     import csv, zipfile
@@ -86,6 +103,27 @@ def import_mines(settings, engine):
         mines = csv.DictReader(mine_file, delimiter='|')
         for row in mines:
             import_mine(row)
+
+def import_object(obj, attr_map):
+    transaction.begin()
+    objects = ObjectImportContainer()
+    for k, v in obj.items():
+        if attr_map.has_key(k):
+            dests = attr_map[k]
+            for dest in dests:
+                obj_name, attr_name = dest.split('.')
+                obj = objects[obj_name]
+                if attr_name.find('()') > 0:
+                    getattr(obj, attr_name.replace('()', ''))(v)
+                    break
+                if not hasattr(obj, attr_name):
+                    print "Missing attribute: %s" % dest
+                    break
+                setattr(obj, attr_name, convert_data(getattr(obj.__class__, 
+                                                             attr_name), v))
+    for obj in objects.values():
+        DBSession.add(obj)
+    transaction.commit()
 
 def import_mine(mine_row):
     print mine_row['CURRENT_MINE_NAME']
