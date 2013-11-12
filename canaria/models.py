@@ -4,6 +4,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     Float,
+    ForeignKey,
     Integer,
     String,
     Text,
@@ -35,12 +36,13 @@ class MyModel(Base):
 
 class Mine(Base):
     __tablename__ = 'mine'
-    id = Column(String(14), primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(50))
     coal = Column(Boolean, default=False)
     mine_type = Column(String(20))
     status = Column(String(50))
     status_date = Column(Date)
+    controller_id = Column(String(7), ForeignKey('controller.id'), nullable=True)
     controller_start_date = Column(Date)
     district_id = Column(String(3))
     assess_control_number = Column(String(20))
@@ -72,15 +74,16 @@ class Activity(Base):
     __tablename__ = 'activity'
     id = Column(Integer, primary_key=True)
     year = Column(Integer, nullable=False)
-    mine_id = Column(Integer)
+    mine_id = Column(Integer, ForeignKey('mine.id'), nullable=False)
     mine_name = Column(String(50))
     state = Column(String(64))
     county = Column(String(64))
     basin = Column(String(64))
-    status = Column(String(24))
-    mine_type = Column(String(24))
-    company_type = Column(String(24))
-    operation = Column(String(24))
+    status = Column(String(32))
+    mine_type = Column(String(32))
+    company_type = Column(String(32))
+    operation = Column(String(32))
+    operating_company = Column(String(64))
     company_address = Column(String(64))
     union = Column(String(64))
     production = Column(Integer)

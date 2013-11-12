@@ -4,7 +4,7 @@ import time
 import transaction
 import urllib2
 from canaria.scripts import usage, bootstrap_script_and_sqlalchemy
-from canaria.models import DBSession, Mine
+from canaria.models import Controller, DBSession, Mine
 from canaria import models
 from datetime import datetime, date, timedelta
 
@@ -64,7 +64,7 @@ def download_sources(argv=sys.argv):
 
 def import_sources(argv=sys.argv):
     settings, engine = bootstrap_script_and_sqlalchemy(argv)
-    # import_mines(settings, engine)
+    import_mines(settings, engine)
     import_activities(settings, engine)
 
 def import_activities(settings, engine):
@@ -122,30 +122,19 @@ def import_object(obj, attr_map):
                 setattr(obj, attr_name, convert_data(getattr(obj.__class__, 
                                                              attr_name), v))
     for obj in objects.values():
-        DBSession.add(obj)
+        preexist = DBSession.query(obj.__class__).filter(obj.__class__.id == obj.id).first()
+        if preexist:
+            print "%s.%s: this object already exists" % (obj.__class__.__name__, obj.id)
+        else:
+            if isinstance(obj, Controller) and obj.id == None:
+                pass
+            else:
+                DBSession.add(obj)
     transaction.commit()
 
 def import_mine(mine_row):
     print mine_row['CURRENT_MINE_NAME']
-    transaction.begin()
-    objects = {'Mine': Mine()}
-    for k, v in mine_row.items():
-        if mine_column_map.has_key(k):
-            dests = mine_column_map[k]
-            for dest in dests:
-                obj_name, attr_name = dest.split('.')
-                obj = objects[obj_name]
-                if attr_name.find('()') > 0:
-                    getattr(obj, attr_name.replace('()', ''))(v)
-                    break
-                if not hasattr(obj, attr_name):
-                    print "Missing attribute: %s" % dest
-                    break
-                setattr(obj, attr_name, convert_data(getattr(obj.__class__, 
-                                                             attr_name), v))
-    for object in objects.values():
-        DBSession.add(object)
-    transaction.commit()
+    import_object(mine_row, mine_column_map)
 
 def set_mine_data():
     pass
