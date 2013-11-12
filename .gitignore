@@ -1,0 +1,8 @@
+*.egg-info
+*.log
+*.pyc
+*.sqlite
+build
+development-local.ini
+dist
+sources
