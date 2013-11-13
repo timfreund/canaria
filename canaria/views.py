@@ -1,35 +1,79 @@
 from pyramid.response import Response
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
 
+import sqlalchemy.sql.functions as sqlfunc
 from sqlalchemy.exc import DBAPIError
-
 from .models import (
     DBSession,
-    MyModel,
+    Activity,
+    Mine,
     )
 
 
 @view_config(route_name='home', renderer='templates/mytemplate.pt')
 def my_view(request):
-    try:
-        one = DBSession.query(MyModel).filter(MyModel.name == 'one').first()
-    except DBAPIError:
-        return Response(conn_err_msg, content_type='text/plain', status_int=500)
-    return {'one': one, 'project': 'canaria'}
+    return {'one': None}
 
-conn_err_msg = """\
-Pyramid is having a problem using your SQL database.  The problem
-might be caused by one of the following things:
+class ViewObject(object):
+    def __init__(self, request):
+        self.request = request
 
-1.  You may need to run the "initialize_canaria_db" script
-    to initialize your database tables.  Check your virtual 
-    environment's "bin" directory for this script and try to run it.
+@view_defaults(renderer='json')
+class CoalProductionViews(ViewObject):
+    @view_config(route_name='coalproduction_by_us')
+    def by_us_location(self):
+        criterion = []
+        location = self.request.matchdict['location']
+        if len(location) == 2:
+            criterion.append(Activity.county == location[1])
+        if len(location) >= 1:
+            criterion.append(Activity.state.like('%s%%' % location[0]))
+        if self.request.matchdict['year'] != '*':
+            # TODO - if year == '*', should we group by year?
+            criterion.append(Activity.year == self.request.matchdict['year'])
 
-2.  Your database server may not be running.  Check that the
-    database server referred to by the "sqlalchemy.url" setting in
-    your "development.ini" file is running.
+        if not self.request.params.has_key('group'):
+            activity = DBSession.query(Activity).filter(*criterion)
+        else:
+            values = []
+            names = []
+            group = []
+            if self.request.params['group'] == 'state':
+                values.append(Activity.state)
+                group.append(Activity.state)
+                names.append("state")
+            else:
+                values.append(Activity.state)
+                values.append(Activity.county)
+                group.append(Activity.state)
+                group.append(Activity.county)
+                names.append("state")
+                names.append("county")
+            values.append(sqlfunc.sum(Activity.production))
+            names.append("production")
+            values.append(sqlfunc.sum(Activity.average_employees))
+            names.append("average_employees")
+            values.append(sqlfunc.sum(Activity.labor_hours))
+            names.append("labor_hours")
 
-After you fix the problem, please restart the Pyramid application to
-try it again.
-"""
+            results = DBSession.query(*values).filter(*criterion).group_by(*group).all()
+            activity = []
+            for row in results:
+                d = {}
+                for name, value in zip(names, row):
+                    d[name] = value
+                activity.append(d)
+        
+        return {'production': activity}
+
+    @view_config(route_name='coalproduction_by_geo')
+    def by_geo(self):
+        return {}
+
+    @view_config(route_name='coalproduction_by_mine')
+    def by_mine(self):
+        return {}
+
+    def get_production(self, request, criterion):
+        return 
 

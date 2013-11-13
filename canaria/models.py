@@ -90,6 +90,12 @@ class Activity(Base):
     average_employees = Column(Integer)
     labor_hours = Column(Integer)
 
+    def __json__(self, request):
+        json = {}
+        for c in Activity.__table__.columns:
+            json[c.name] = getattr(self, c.name)
+        return json
+
 class Controller(Base):
     __tablename__ = 'controller'
     id = Column(String(7), primary_key=True)
