@@ -1,0 +1,50 @@
+<metal:main metal:define-macro="master">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <title>CANARIA</title>
+  <meta charset="utf-8"/>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <script type="text/javascript" metal:define-slot="javascript"></script>
+  <link rel="shortcut icon" href="${request.static_url('canaria:static/favicon.ico')}" />
+
+  <link metal:define-slot="css"></link>
+  <link rel="stylesheet" href="${request.static_url('canaria:static/css/bootstrap.min.css')}" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="${request.static_url('canaria:static/canaria.css')}" type="text/css" media="screen" charset="utf-8"/>
+</head>
+<body>
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="glyphicon-bar"></span>
+          <span class="glyphicon-bar"></span>
+          <span class="glyphicon-bar"></span>
+        </a>
+        <a class="brand" href="${request.route_path('/')}">CANARIA</a>
+        <div class="navbar-collapse collapse">
+          <ul class="nav">
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-9 content">
+        <metal:main metal:define-slot="body"/>
+      </div>
+    </div>
+  </div> <!-- /container -->
+
+  <footer>
+    <p>clever footer text goes here.</p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="${request.static_url('canaria:static/js/bootstrap.min.js')}"></script>
+</body>
+</html>
+</metal:main>

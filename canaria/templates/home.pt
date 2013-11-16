@@ -1,0 +1,5 @@
+<metal:main_template use-macro="view.main_template">
+<div metal:fill-slot="body">
+hello
+</div>
+</metal:main_template>
