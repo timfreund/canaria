@@ -15,10 +15,11 @@ def main(global_config, **settings):
     Base.metadata.bind = engine
     config = Configurator(settings=settings)
     config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('home', '/')
+    config.add_route('/', '/')
     # Also accept the following parameters:
     #  group=[state|county]
     #  
+    config.add_route('apidocs', '/api')
     config.add_route('coalproduction_by_us', '/v1/coalproduction/{year}/us/*location')
     config.add_route('coalproduction_by_mine', '/v1/coalproduction/{year}/mine/{mine_id}')
     config.add_route('coalproduction_by_geo', '/v1/coalproduction/{year}/geo/{longitude},{latitude}')

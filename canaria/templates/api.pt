@@ -1,0 +1,13 @@
+<metal:main_template use-macro="view.main_template">
+  <div metal:fill-slot="body">
+    <h1>16tons REST Interface</h1>
+
+    <p>All the data tables and visualizations on this site fetch data
+    through a REST interface.  You can, too.</p>
+
+    <h2>Base URL</h2>
+
+    <p>Everything happens relative to <code>${request.host_url}/api/v1</code>.
+
+  </div>
+</metal:main_template>

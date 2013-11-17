@@ -1,3 +1,4 @@
+from pyramid.renderers import get_renderer
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 
@@ -10,13 +11,24 @@ from .models import (
     )
 
 
-@view_config(route_name='home', renderer='templates/mytemplate.pt')
-def my_view(request):
-    return {'one': None}
-
 class ViewObject(object):
     def __init__(self, request):
         self.request = request
+
+class BrowserView(ViewObject):
+    def __init__(self, request):
+        ViewObject.__init__(self, request)
+        renderer = get_renderer('templates/main_template.pt')
+        self.main_template = renderer.implementation().macros['master']
+
+class AnonymousViews(BrowserView):
+    @view_config(renderer='templates/api.pt', route_name='apidocs')
+    def api(self):
+        return {}
+
+    @view_config(renderer='templates/home.pt', route_name='/')
+    def home(self):
+        return {}
 
 @view_defaults(renderer='json')
 class CoalProductionViews(ViewObject):
@@ -33,7 +45,10 @@ class CoalProductionViews(ViewObject):
             criterion.append(Activity.year == self.request.matchdict['year'])
 
         if not self.request.params.has_key('group'):
-            activity = DBSession.query(Activity).filter(*criterion)
+            activity = []
+            for row in DBSession.query(Activity).filter(*criterion).all():
+                activity.append(row)
+                        
         else:
             values = []
             names = []
