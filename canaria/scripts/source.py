@@ -19,8 +19,55 @@ from sqlalchemy import (
     String,
     Text,
     )
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 
-log = logging.getLogger('canaria.scripts')
+log = logging.getLogger('canaria')
+
+class StorageProxy(object):
+    def __init__(self):
+        self.objs = {}
+
+    def get(self, klass, oid):
+        if not self.objs.has_key(klass):
+            self.objs[klass] = {}
+
+        if not self.objs[klass].has_key(oid):
+            self.objs[klass][oid] = klass(id=oid)
+
+        return self.objs[klass][oid]
+
+    def save(self, obj):
+        if not self.objs.has_key(obj.__class__):
+            self.objs[obj.__class__] = {}
+        if not obj.id:
+            log.info("No ID for %s, not saving" %(obj.__class__.__name__))
+            return
+        if self.objs[obj.__class__].has_key(obj.id):
+            log.info("Collision: %s.%s" % (obj.__class__.__name__, obj.id))
+            older = self.objs[obj.__class__][obj.id]
+            for k, v in obj.__class__.__dict__.items():
+                if k == 'id':
+                    break
+                if isinstance(v, InstrumentedAttribute):
+                    if getattr(obj, k):
+                        msg = "Updating %s.%s attribute %s from %s to %s"
+                        log.info(msg % (obj.__class__.__name__,
+                                        obj.id,
+                                        k,
+                                        getattr(older, k),
+                                        getattr(obj, k)))
+                        setattr(older, k, getattr(obj, k))
+        else:
+            self.objs[obj.__class__][obj.id] = obj
+
+    def store_all(self):
+        transaction.begin()
+        log.info("storing all objects")
+        for klass, klass_dict in self.objs.items():
+            log.info("%s" % klass.__name__)
+            for obj in klass_dict.values():
+                DBSession.add(obj)
+        transaction.commit()
 
 class ObjectImportContainer(object):
     def __init__(self):
@@ -67,8 +114,10 @@ def download_sources(argv=sys.argv):
 
 def import_sources(argv=sys.argv):
     settings, engine = bootstrap_script_and_sqlalchemy(argv)
-    import_mines(settings, engine)
-    import_activities(settings, engine)
+    storage = StorageProxy()
+    import_mines(settings, engine, storage)
+    # import_activities(settings, engine)
+    storage.store_all()
 
 def import_activities(settings, engine):
     src_template = os.path.sep.join([settings['canaria.sources'], "coalpublic%d.xls"])
@@ -96,7 +145,7 @@ def import_activities_record(settings, engine, activity):
     else:
         import_object(activity, activity_column_map)
 
-def import_mines(settings, engine):
+def import_mines(settings, engine, storage):
     import csv, zipfile
     src_path = os.path.sep.join([settings['canaria.sources'], 'Mines.zip'])
     dest_path = os.path.sep.join([settings['canaria.sources'], 'Mines.txt'])
@@ -108,10 +157,10 @@ def import_mines(settings, engine):
     with open(dest_path, 'r') as mine_file:
         mines = csv.DictReader(mine_file, delimiter='|')
         for row in mines:
-            import_object(row, mine_column_map)
+            import_object(row, mine_column_map, storage)
 
-def import_object(obj, attr_map):
-    transaction.begin()
+def import_object(obj, attr_map, storage):
+    # transaction.begin()
     objects = ObjectImportContainer()
     for k, v in obj.items():
         if attr_map.has_key(k):
@@ -128,13 +177,14 @@ def import_object(obj, attr_map):
                 setattr(obj, attr_name, convert_data(getattr(obj.__class__, 
                                                              attr_name), v))
     for obj in objects.values():
-        preexist = DBSession.query(obj.__class__).filter(obj.__class__.id == obj.id).first()
-        if not preexist:
-            if isinstance(obj, Controller) and obj.id == None:
-                pass
-            else:
-                DBSession.add(obj)
-    transaction.commit()
+        storage.save(obj)
+    #     preexist = DBSession.query(obj.__class__).filter(obj.__class__.id == obj.id).first()
+    #     if not preexist:
+    #         if isinstance(obj, Controller) and obj.id == None:
+    #             pass
+    #         else:
+    #             DBSession.add(obj)
+    # transaction.commit()
 
 def convert_data(attr, value):
     if value == '' or value == '-':
