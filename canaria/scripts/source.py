@@ -157,6 +157,7 @@ def import_mines(settings, engine, storage):
     import csv, zipfile
     src_path = os.path.sep.join([settings['canaria.sources'], 'Mines.zip'])
     dest_path = os.path.sep.join([settings['canaria.sources'], 'Mines.txt'])
+    log.info("Extracting Mines.txt from %s" % src_path)
     with zipfile.ZipFile(src_path) as mines_zip:
         mines_zip_txt = mines_zip.open("Mines.txt", "r")
         with open(dest_path, "w") as mines_txt:
