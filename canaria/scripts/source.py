@@ -5,7 +5,7 @@ import time
 import transaction
 import urllib2
 from canaria.scripts import usage, bootstrap_script_and_sqlalchemy
-from canaria.models import Controller, DBSession, Mine
+from canaria.models import Activity, Controller, DBSession, Mine
 from canaria import models
 from datetime import datetime, date, timedelta
 
@@ -22,6 +22,9 @@ from sqlalchemy import (
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 log = logging.getLogger('canaria')
+
+# TODO: gross global value...
+autoid_values = {'Activity': 1}
 
 class StorageProxy(object):
     def __init__(self):
@@ -43,7 +46,7 @@ class StorageProxy(object):
             log.info("No ID for %s, not saving" %(obj.__class__.__name__))
             return
         if self.objs[obj.__class__].has_key(obj.id):
-            log.info("Collision: %s.%s" % (obj.__class__.__name__, obj.id))
+            log.debug("Collision: %s.%s" % (obj.__class__.__name__, obj.id))
             older = self.objs[obj.__class__][obj.id]
             for k, v in obj.__class__.__dict__.items():
                 if k == 'id':
@@ -51,7 +54,7 @@ class StorageProxy(object):
                 if isinstance(v, InstrumentedAttribute):
                     if getattr(obj, k):
                         msg = "Updating %s.%s attribute %s from %s to %s"
-                        log.info(msg % (obj.__class__.__name__,
+                        log.debug(msg % (obj.__class__.__name__,
                                         obj.id,
                                         k,
                                         getattr(older, k),
@@ -63,10 +66,12 @@ class StorageProxy(object):
     def store_all(self):
         transaction.begin()
         log.info("storing all objects")
-        for klass, klass_dict in self.objs.items():
+        for klass in [Controller, Mine, Activity]:
             log.info("%s" % klass.__name__)
-            for obj in klass_dict.values():
-                DBSession.add(obj)
+            if self.objs.has_key(klass):
+                for obj in self.objs[klass].values():
+                    DBSession.add(obj)
+                DBSession.flush()
         transaction.commit()
 
 class ObjectImportContainer(object):
@@ -76,6 +81,9 @@ class ObjectImportContainer(object):
     def __getitem__(self, key):
         if not self.objs.has_key(key):
             new_obj = getattr(models, key)()
+            if autoid_values.has_key(key):
+                new_obj.id = autoid_values[key]
+                autoid_values[key] = new_obj.id + 1
             self.objs[key] = new_obj
         return self.objs[key]
 
@@ -116,18 +124,18 @@ def import_sources(argv=sys.argv):
     settings, engine = bootstrap_script_and_sqlalchemy(argv)
     storage = StorageProxy()
     import_mines(settings, engine, storage)
-    # import_activities(settings, engine)
+    import_activities(settings, engine, storage)
     storage.store_all()
 
-def import_activities(settings, engine):
+def import_activities(settings, engine, storage):
     src_template = os.path.sep.join([settings['canaria.sources'], "coalpublic%d.xls"])
     src_files = [src_template % year for year in range(1983, 2012)]
 
     for src_file in src_files:
         tree = ET.parse(src_file)
-        import_activities_file(settings, engine, tree)
+        import_activities_file(settings, engine, tree, storage)
 
-def import_activities_file(settings, engine, tree):
+def import_activities_file(settings, engine, tree, storage):
     rows = tree.findall('.//{urn:schemas-microsoft-com:office:spreadsheet}Row')
     headers = []
     for datum in rows[3].findall('.//{urn:schemas-microsoft-com:office:spreadsheet}Data'):
@@ -137,13 +145,13 @@ def import_activities_file(settings, engine, tree):
         activity = {}
         for k, v in zip(headers, values):
             activity[k] = v
-        import_activities_record(settings, engine, activity)
+        import_activities_record(settings, engine, activity, storage)
 
-def import_activities_record(settings, engine, activity):
-    if activity['MSHA ID'] == None:
-        log.error("No MSHA ID, skipping")
-    else:
-        import_object(activity, activity_column_map)
+def import_activities_record(settings, engine, activity, storage):
+    if activity['MSHA ID'] == '0': 
+        # why the exceptions? 
+        activity['MSHA ID'] = '-'
+    import_object(activity, activity_column_map, storage)
 
 def import_mines(settings, engine, storage):
     import csv, zipfile
@@ -159,10 +167,9 @@ def import_mines(settings, engine, storage):
         for row in mines:
             import_object(row, mine_column_map, storage)
 
-def import_object(obj, attr_map, storage):
-    # transaction.begin()
+def import_object(row, attr_map, storage):
     objects = ObjectImportContainer()
-    for k, v in obj.items():
+    for k, v in row.items():
         if attr_map.has_key(k):
             dests = attr_map[k]
             for dest in dests:
@@ -174,24 +181,19 @@ def import_object(obj, attr_map, storage):
                 if not hasattr(obj, attr_name):
                     print "Missing attribute: %s" % dest
                     break
-                setattr(obj, attr_name, convert_data(getattr(obj.__class__, 
-                                                             attr_name), v))
+                converted_value = convert_data(getattr(obj.__class__, attr_name), v)
+                setattr(obj, attr_name, converted_value)
     for obj in objects.values():
         storage.save(obj)
-    #     preexist = DBSession.query(obj.__class__).filter(obj.__class__.id == obj.id).first()
-    #     if not preexist:
-    #         if isinstance(obj, Controller) and obj.id == None:
-    #             pass
-    #         else:
-    #             DBSession.add(obj)
-    # transaction.commit()
 
 def convert_data(attr, value):
-    if value == '' or value == '-':
+    if value == u'' or value == u'-':
         return None
 
     t = attr.property.columns[0].type
-    if isinstance(t, Date):
+    if isinstance(t, Integer):
+        return int(value)
+    elif isinstance(t, Date):
         return datetime.strptime(value, '%m/%d/%Y').date()
     elif isinstance(t, Boolean):
         return value == 'Y'
@@ -199,7 +201,7 @@ def convert_data(attr, value):
 
 activity_column_map = {
     'Year': ['Activity.year'],
-    'MSHA ID': ['Activity.mine_id'],
+    'MSHA ID': ['Mine.id', 'Activity.mine_id'],
     'Mine Name': ['Activity.mine_name'],
     'Mine State': ['Activity.state'],
     'Mine County': ['Activity.county'],
