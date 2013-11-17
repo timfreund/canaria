@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import logging
 import os, sys
 import time
 import transaction
@@ -18,6 +19,8 @@ from sqlalchemy import (
     String,
     Text,
     )
+
+log = logging.getLogger('canaria.scripts')
 
 class ObjectImportContainer(object):
     def __init__(self):
@@ -88,7 +91,10 @@ def import_activities_file(settings, engine, tree):
         import_activities_record(settings, engine, activity)
 
 def import_activities_record(settings, engine, activity):
-    import_object(activity, activity_column_map)
+    if activity['MSHA ID'] == None:
+        log.error("No MSHA ID, skipping")
+    else:
+        import_object(activity, activity_column_map)
 
 def import_mines(settings, engine):
     import csv, zipfile
@@ -102,7 +108,7 @@ def import_mines(settings, engine):
     with open(dest_path, 'r') as mine_file:
         mines = csv.DictReader(mine_file, delimiter='|')
         for row in mines:
-            import_mine(row)
+            import_object(row, mine_column_map)
 
 def import_object(obj, attr_map):
     transaction.begin()
@@ -123,24 +129,15 @@ def import_object(obj, attr_map):
                                                              attr_name), v))
     for obj in objects.values():
         preexist = DBSession.query(obj.__class__).filter(obj.__class__.id == obj.id).first()
-        if preexist:
-            print "%s.%s: this object already exists" % (obj.__class__.__name__, obj.id)
-        else:
+        if not preexist:
             if isinstance(obj, Controller) and obj.id == None:
                 pass
             else:
                 DBSession.add(obj)
     transaction.commit()
 
-def import_mine(mine_row):
-    print mine_row['CURRENT_MINE_NAME']
-    import_object(mine_row, mine_column_map)
-
-def set_mine_data():
-    pass
-
 def convert_data(attr, value):
-    if value == '':
+    if value == '' or value == '-':
         return None
 
     t = attr.property.columns[0].type
