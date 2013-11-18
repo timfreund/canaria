@@ -12,7 +12,7 @@
     <h2>Coal Production</h2>
 
     <h3>By US State and County</h3>
-    <p><code>/api/v1/coalproduction/{year}/us/{State}/{County}</code></p>
+    <p><code>/coalproduction/{year}/us/{State}/{County}</code></p>
 
     <div class="panel panel-default">
       <div class="panel-heading">URL Components and Parameters</div>
