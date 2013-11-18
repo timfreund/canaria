@@ -7,7 +7,63 @@
 
     <h2>Base URL</h2>
 
-    <p>Everything happens relative to <code>${request.host_url}/api/v1</code>.
+    <p>Everything happens relative to <code>${request.host_url}/api/v1</code>.</p>
+
+    <h2>Coal Production</h2>
+
+    <h3>By US State and County</h3>
+    <p><code>/api/v1/coalproduction/{year}/us/{State}/{County}</code></p>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">URL Components and Parameters</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <td colspan="3">URL Components</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>year</td>
+            <td>Required</td>
+            <td>1983 through 2011, or * for all years</td>
+          </tr>
+          <tr>
+            <td>state</td>
+            <td>Optional</td>
+            <td>The full name of a US State, ex: Pennsylvania, Missouri</td>
+          </tr>
+          <tr>
+            <td>county</td>
+            <td>Optional</td>
+            <td>The full name of a county or parish within a US State</td>
+          </tr>
+        </tbody>
+        <thead>
+          <tr>
+            <td colspan="3">Parameters</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>group</td>
+            <td>Optional</td>
+            <td>state or county, groups results and sums production, works, and hours for the group.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Examples</h4>
+    <ul>
+      <li><a href="/api/v1/coalproduction/2011/us/?group=state">Nation wide production in 2011, grouped by state</a></li>
+      <li><a href="/api/v1/coalproduction/*/us/Missouri?group=county">All production in Missouri, grouped by county</a></li>
+      <li><a href="/api/v1/coalproduction/*/us/Missouri/Bates">Detailed production in Bates County, Missouri</a></li>
+
+    </ul>
+    <h3>By MSHA Mine ID</h3>
+
+    <h3>By Latitude and Longitude</h3>
 
   </div>
 </metal:main_template>

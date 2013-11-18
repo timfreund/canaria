@@ -20,8 +20,8 @@ def main(global_config, **settings):
     #  group=[state|county]
     #  
     config.add_route('apidocs', '/api')
-    config.add_route('coalproduction_by_us', '/v1/coalproduction/{year}/us/*location')
-    config.add_route('coalproduction_by_mine', '/v1/coalproduction/{year}/mine/{mine_id}')
-    config.add_route('coalproduction_by_geo', '/v1/coalproduction/{year}/geo/{longitude},{latitude}')
+    config.add_route('coalproduction_by_us', '/api/v1/coalproduction/{year}/us/*location')
+    config.add_route('coalproduction_by_mine', '/api/v1/coalproduction/{year}/mine/{mine_id}')
+    config.add_route('coalproduction_by_geo', '/api/v1/coalproduction/{year}/geo/{longitude},{latitude}')
     config.scan()
     return config.make_wsgi_app()
