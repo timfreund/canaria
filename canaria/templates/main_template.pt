@@ -40,7 +40,9 @@
   </div> <!-- /container -->
 
   <footer>
-    <p>clever footer text goes here.</p>
+    <p>This <a href="https://github.com/timfreund/canaria">site is open source</a>.
+      The <a href="https://github.com/timfreund/canaria/blob/master/canaria/scripts/source.py#L96">data is free</a>, too.
+    Contact <a href="http://tim.freunds.net">Tim Freund</a> for more information.</p>
   </footer>
 
   <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
