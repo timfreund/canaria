@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
 <head>
-  <title>CANARIA</title>
+  <title>16tons.us</title>
   <meta charset="utf-8"/>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <script type="text/javascript" metal:define-slot="javascript"></script>
@@ -14,15 +14,17 @@
   <link rel="stylesheet" href="${request.static_url('canaria:static/canaria.css')}" type="text/css" media="screen" charset="utf-8"/>
 </head>
 <body>
-  <div class="navbar navbar-inverse navbar-fixed-top">
-    <div class="navbar-inner">
-      <div class="container">
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="${request.route_path('/')}">16tons.us</a>
+      </div>
+      <div class="navbar-inner">
         <a class="btn btn-navbar" data-toggle="collapse" data-target=".navbar-collapse">
           <span class="glyphicon-bar"></span>
           <span class="glyphicon-bar"></span>
           <span class="glyphicon-bar"></span>
         </a>
-        <a class="brand" href="${request.route_path('/')}">CANARIA</a>
         <div class="navbar-collapse collapse">
           <ul class="nav">
           </ul>

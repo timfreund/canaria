@@ -1,5 +1,5 @@
 <metal:main_template use-macro="view.main_template">
 <div metal:fill-slot="body">
-hello
+<p>Demos and more are coming soon.  Until then, <a href="/api">read about the API</a>.</p>
 </div>
 </metal:main_template>
