@@ -65,6 +65,8 @@
       <b>Nation wide production in 2011, grouped by state</b>
       <a class="btn btn-default" role="button" onclick="requestDataTable('#example-coalprod-nationwide2011bystate', '/api/v1/coalproduction/2011/us/?group=state');">AJAX Data Table</a>
       <a class="btn btn-default" role="button" href="/api/v1/coalproduction/2011/us/?group=state">Raw Data</a>
+      <br/>
+      <code>/coalproduction/2011/us/?group=state</code>
       <div id="example-coalprod-nationwide2011bystate">
       </div>
     </div>
@@ -72,7 +74,8 @@
     <div>
       <b>All production in Missouri, grouped by county</b>
       <a class="btn btn-default" role="button" onclick="requestDataTable('#example-coalprod-missouribycounty', '/api/v1/coalproduction/*/us/Missouri?group=county');">AJAX Data Table</a>
-      <a class="btn btn-default" role="button" href="/api/v1/coalproduction/*/us/Missouri?group=county">Raw Data</a>
+      <a class="btn btn-default" role="button" href="/api/v1/coalproduction/*/us/Missouri?group=county">Raw Data</a><br/>
+      <code>'/coalproduction/*/us/Missouri?group=county</code>
       <div id="example-coalprod-missouribycounty"></div>
     </div>
 
@@ -80,6 +83,8 @@
       <b>Detailed production in Bates County, Missouri</b>
       <a class="btn btn-default" role="button" onclick="requestDataTable('#example-coalprod-missouribates', '/api/v1/coalproduction/*/us/Missouri/Bates');">AJAX Data Table</a>
       <a class="btn btn-default" role="button" href="/api/v1/coalproduction/*/us/Missouri/Bates">Raw Data</a>
+      <br/>
+      <code>/coalproduction/*/us/Missouri/Bates</code>
       <div id="example-coalprod-missouribates"></div>
     </div>
 
