@@ -93,6 +93,6 @@
     <h3>By Latitude and Longitude</h3>
 
     <h2>Credits</h2>
-    <p>Examples on this page use the <a ref="http://labs.mbrooks.info/demos/Tidy-Table/"></a> jQuery plugin</p>
+    <p>Examples on this page use the <a ref="http://labs.mbrooks.info/demos/Tidy-Table/">Tidy Table</a> jQuery plugin</p>
   </div>
 </metal:main_template>
