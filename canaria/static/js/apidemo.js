@@ -32,9 +32,6 @@ function insertDataTable(target, data){
         }
     }
 
-    console.log(columns);
-    console.log(rows);
-
 	$(target)
 		.TidyTable({
 			columnTitles : columns,
