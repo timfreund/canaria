@@ -49,6 +49,7 @@
 
   <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
   <script src="${request.static_url('canaria:static/js/bootstrap.min.js')}"></script>
+  <div metal:define-slot="jsload"></div>
 </body>
 </html>
 </metal:main>

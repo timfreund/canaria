@@ -79,7 +79,7 @@ class CoalProductionViews(ViewObject):
                     d[name] = value
                 activity.append(d)
         
-        return {'production': activity}
+        return {'data': activity,}
 
     @view_config(route_name='coalproduction_by_geo')
     def by_geo(self):

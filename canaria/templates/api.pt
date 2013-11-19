@@ -1,4 +1,10 @@
 <metal:main_template use-macro="view.main_template">
+  <div metal:fill-slot="jsload">
+    <script src="${request.static_url('canaria:static/js/apidemo.js')}"></script>
+    <script src="${request.static_url('canaria:static/js/jquery.tidy.table.min.js')}"></script>
+    <link rel="stylesheet" href="${request.static_url('canaria:static/css/jquery.tidy.table.min.css')}" type="text/css" media="screen" charset="utf-8"/>
+  </div>
+
   <div metal:fill-slot="body">
     <h1>16tons REST Interface</h1>
 
@@ -55,15 +61,33 @@
     </div>
 
     <h4>Examples</h4>
-    <ul>
-      <li><a href="/api/v1/coalproduction/2011/us/?group=state">Nation wide production in 2011, grouped by state</a></li>
-      <li><a href="/api/v1/coalproduction/*/us/Missouri?group=county">All production in Missouri, grouped by county</a></li>
-      <li><a href="/api/v1/coalproduction/*/us/Missouri/Bates">Detailed production in Bates County, Missouri</a></li>
+    <div>
+      <b>Nation wide production in 2011, grouped by state</b>
+      <a class="btn btn-default" role="button" onclick="requestDataTable('#example-coalprod-nationwide2011bystate', '/api/v1/coalproduction/2011/us/?group=state');">AJAX Data Table</a>
+      <a class="btn btn-default" role="button" href="/api/v1/coalproduction/2011/us/?group=state">Raw Data</a>
+      <div id="example-coalprod-nationwide2011bystate">
+      </div>
+    </div>
 
-    </ul>
+    <div>
+      <b>All production in Missouri, grouped by county</b>
+      <a class="btn btn-default" role="button" onclick="requestDataTable('#example-coalprod-missouribycounty', '/api/v1/coalproduction/*/us/Missouri?group=county');">AJAX Data Table</a>
+      <a class="btn btn-default" role="button" href="/api/v1/coalproduction/*/us/Missouri?group=county">Raw Data</a>
+      <div id="example-coalprod-missouribycounty"></div>
+    </div>
+
+    <div>
+      <b>Detailed production in Bates County, Missouri</b>
+      <a class="btn btn-default" role="button" onclick="requestDataTable('#example-coalprod-missouribates', '/api/v1/coalproduction/*/us/Missouri/Bates');">AJAX Data Table</a>
+      <a class="btn btn-default" role="button" href="/api/v1/coalproduction/*/us/Missouri/Bates">Raw Data</a>
+      <div id="example-coalprod-missouribates"></div>
+    </div>
+
     <h3>By MSHA Mine ID</h3>
 
     <h3>By Latitude and Longitude</h3>
 
+    <h2>Credits</h2>
+    <p>Examples on this page use the <a ref="http://labs.mbrooks.info/demos/Tidy-Table/"></a> jQuery plugin</p>
   </div>
 </metal:main_template>
