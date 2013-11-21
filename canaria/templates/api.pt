@@ -89,6 +89,42 @@
     </div>
 
     <h3>By MSHA Mine ID</h3>
+    <p><code>/coalproduction/{year}/mine/{id}</code></p>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">URL Components and Parameters</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <td colspan="3">URL Components</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>year</td>
+            <td>Required</td>
+            <td>1983 through 2011, or * for all years</td>
+          </tr>
+          <tr>
+            <td>id</td>
+            <td>Required</td>
+            <td>The MSHA Mine ID of the mine or facility you're interested in</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Examples</h4>
+    <div>
+      <b>All production for Ryans Creek Mine (#101903)</b>
+      <a class="btn btn-default" role="button" onclick="requestDataTable('#example-coalprod-mineid', '/api/v1/coalproduction/*/mine/101903');">AJAX Data Table</a>
+      <a class="btn btn-default" role="button" href="/api/v1/coalproduction/*/mine/101903">Raw Data</a>
+      <br/>
+      <code>/coalproduction/*/mine/101903</code>
+      <div id="example-coalprod-mineid">
+      </div>
+    </div>
+
 
     <h3>By Latitude and Longitude</h3>
 

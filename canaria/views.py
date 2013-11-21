@@ -87,7 +87,16 @@ class CoalProductionViews(ViewObject):
 
     @view_config(route_name='coalproduction_by_mine')
     def by_mine(self):
-        return {}
+        criterion = []
+        criterion.append(Activity.mine_id == self.request.matchdict['mine_id'])
+        if self.request.matchdict['year'] != '*':
+            # TODO - if year == '*', should we group by year?
+            criterion.append(Activity.year == self.request.matchdict['year'])
+        activity = []
+        for row in DBSession.query(Activity).filter(*criterion).all():
+            activity.append(row)
+
+        return {'data': activity,}
 
     def get_production(self, request, criterion):
         return 
