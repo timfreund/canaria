@@ -10,7 +10,6 @@ from .models import (
     Mine,
     )
 
-
 class ViewObject(object):
     def __init__(self, request):
         self.request = request
@@ -20,6 +19,11 @@ class BrowserView(ViewObject):
         ViewObject.__init__(self, request)
         renderer = get_renderer('templates/main_template.pt')
         self.main_template = renderer.implementation().macros['master']
+
+        self.piwik_host = None
+        if request.registry.settings.has_key('piwik.host'):
+            self.piwik_host = request.registry.settings['piwik.host']
+            self.piwik_id = request.registry.settings['piwik.site_id']
 
 class AnonymousViews(BrowserView):
     @view_config(renderer='templates/api.pt', route_name='apidocs')

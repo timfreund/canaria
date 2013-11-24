@@ -50,6 +50,21 @@
   <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
   <script src="${request.static_url('canaria:static/js/bootstrap.min.js')}"></script>
   <div metal:define-slot="jsload"></div>
+
+  <div tal:condition="view.piwik_host">
+  <!-- Piwik -->
+  <script type="text/javascript">
+    var pkBaseURL = (("https:" == document.location.protocol) ? "https://${view.piwik_host}/" : "http://${view.piwik_host}/");
+    document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+  </script><script type="text/javascript">
+    try {
+    var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 5);
+    piwikTracker.trackPageView();
+    piwikTracker.enableLinkTracking();
+    } catch( err ) {}
+  </script><noscript><p><img src="http://${view.piwik_host}/piwik.php?idsite=${view.piwik_id}" style="border:0" alt="" /></p></noscript>
+  <!-- End Piwik Tracking Code -->
+  </div>
 </body>
 </html>
 </metal:main>
