@@ -48,41 +48,9 @@ class CoalProductionViews(ViewObject):
             # TODO - if year == '*', should we group by year?
             criterion.append(Activity.year == self.request.matchdict['year'])
 
-        if not self.request.params.has_key('group'):
-            activity = []
-            for row in DBSession.query(Activity).filter(*criterion).all():
-                activity.append(row)
-                        
-        else:
-            values = []
-            names = []
-            group = []
-            if self.request.params['group'] == 'state':
-                values.append(Activity.state)
-                group.append(Activity.state)
-                names.append("state")
-            else:
-                values.append(Activity.state)
-                values.append(Activity.county)
-                group.append(Activity.state)
-                group.append(Activity.county)
-                names.append("state")
-                names.append("county")
-            values.append(sqlfunc.sum(Activity.production))
-            names.append("production")
-            values.append(sqlfunc.sum(Activity.average_employees))
-            names.append("average_employees")
-            values.append(sqlfunc.sum(Activity.labor_hours))
-            names.append("labor_hours")
+        group_type = self.request.params.get('group', None)
+        activity = self.get_production(criterion, group_type)
 
-            results = DBSession.query(*values).filter(*criterion).group_by(*group).all()
-            activity = []
-            for row in results:
-                d = {}
-                for name, value in zip(names, row):
-                    d[name] = value
-                activity.append(d)
-        
         return {'data': activity,}
 
     @view_config(route_name='coalproduction_by_geo')
@@ -96,12 +64,49 @@ class CoalProductionViews(ViewObject):
         if self.request.matchdict['year'] != '*':
             # TODO - if year == '*', should we group by year?
             criterion.append(Activity.year == self.request.matchdict['year'])
-        activity = []
-        for row in DBSession.query(Activity).filter(*criterion).all():
-            activity.append(row)
-
+        activity = self.get_production(criterion)
         return {'data': activity,}
 
-    def get_production(self, request, criterion):
-        return 
+    def get_production(self, criterion, group_type=None):
+        activity = []
 
+        if group_type:
+            activity = self.get_grouped_production(criterion, group_type)
+        else:
+            for row in DBSession.query(Activity).filter(*criterion).all():
+                activity.append(row)
+        return activity
+
+    def get_grouped_production(self, criterion, group_type):
+        activity = []
+        if group_type in ['state', 'county']:
+            values = []
+            names = []
+            group = []
+
+            values.append(Activity.state)
+            group.append(Activity.state)
+            names.append("state")
+
+            if group_type == 'county':
+                values.append(Activity.county)
+                group.append(Activity.county)
+                names.append("county")
+
+            values.append(sqlfunc.sum(Activity.production))
+            names.append("production")
+            values.append(sqlfunc.sum(Activity.average_employees))
+            names.append("average_employees")
+            values.append(sqlfunc.sum(Activity.labor_hours))
+            names.append("labor_hours")
+
+            results = DBSession.query(*values).filter(*criterion).group_by(*group).all()
+            for row in results:
+                d = {}
+                for name, value in zip(names, row):
+                    d[name] = value
+                activity.append(d)
+        else:
+            raise Exception("Invalid group type: %s" % group_type)
+
+        return activity
