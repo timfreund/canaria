@@ -185,6 +185,24 @@ def import_object(row, attr_map, storage):
                 converted_value = convert_data(getattr(obj.__class__, attr_name), v)
                 setattr(obj, attr_name, converted_value)
     for obj in objects.values():
+        if hasattr(obj, 'location'):
+            if getattr(obj, 'latitude') and getattr(obj, 'longitude'):
+                lat = float(getattr(obj, 'latitude'))
+                lon = float(getattr(obj, 'longitude')) * -1
+                setattr(obj, 'longitude', lon)
+
+                # there are some bogus locations in the source doc
+                # feeling compelled to ignore all of the lat/long data due
+                # to its complete crappiness
+                if ((lat < 11 or lat > 73) or
+                    (lon < -180 or lon > -60)):
+                    log.info("Weird location: %s %f %f" % (obj.id, lon, lat))
+                    setattr(obj, 'longitude', None)
+                    setattr(obj, 'latitude', None)
+                else:
+                    setattr(obj, 'location',
+                            'SRID=4326;POINT(%s %s)' % (getattr(obj, 'longitude'),
+                                                        getattr(obj, 'latitude')))
         storage.save(obj)
 
 def convert_data(attr, value):
@@ -263,8 +281,8 @@ mine_column_map = dict(
     MAINT_SHIFTS_PER_DAY = ['Mine.maintenance_shifts'],
     NO_EMPLOYEES = ['Mine.employees'],
     PART48_TRAINING = ['Mine.part48'],
-    LONGITUDE = ['Mine.latitude'],
-    LATITUDE = ['Mine.longitude'],
+    LONGITUDE = ['Mine.longitude'],
+    LATITUDE = ['Mine.latitude'],
     AVG_MINE_HEIGHT = ['Mine.average_height'],
     MINE_GAS_CATEGORY_CD = [],
     METHANE_LIBERATION = ['Mine.methane_liberation'],

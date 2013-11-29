@@ -17,6 +17,8 @@ from sqlalchemy.orm import (
     sessionmaker,
     )
 
+from geoalchemy2 import Geometry
+
 from zope.sqlalchemy import ZopeTransactionExtension
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
@@ -58,6 +60,7 @@ class Mine(Base):
     part48 = Column(Boolean, default=False)
     longitude = Column(Float)
     latitude = Column(Float)
+    location = Column(Geometry('POINT', srid=4326, management=True))
     average_height = Column(Integer, default=0)
     methane_liberation = Column(Integer, default=0)
 
