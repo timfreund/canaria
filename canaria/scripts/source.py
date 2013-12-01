@@ -24,7 +24,8 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 log = logging.getLogger('canaria')
 
 # TODO: gross global value...
-autoid_values = {'Activity': 1}
+autoid_values = {'Activity': 1,
+                 'County': 1,}
 
 class StorageProxy(object):
     def __init__(self):
@@ -66,7 +67,7 @@ class StorageProxy(object):
     def store_all(self):
         transaction.begin()
         log.info("storing all objects")
-        for klass in [Operator, FieldOffice, Controller, Mine, Activity]:
+        for klass in [County, Operator, FieldOffice, Controller, Mine, Activity]:
             log.info("%s" % klass.__name__)
             if self.objs.has_key(klass):
                 for obj in self.objs[klass].values():
@@ -103,6 +104,7 @@ def download_sources(argv=sys.argv):
     annual_production_url = "http://www.eia.gov/coal/data/public/xls/coalpublic%d.xls"
     source_urls = [annual_production_url % year for year in range(1983, 2012)]
     source_urls.append("http://www.msha.gov/OpenGovernmentData/DataSets/Mines.zip")
+    source_urls.append("http://www.census.gov/geo/reference/codes/files/national_county.txt")
 
     src_dir = settings['canaria.sources']
     if not os.path.exists(src_dir):
@@ -123,6 +125,7 @@ def download_sources(argv=sys.argv):
 def import_sources(argv=sys.argv):
     settings, engine = bootstrap_script_and_sqlalchemy(argv)
     storage = StorageProxy()
+    import_counties(settings, engine, storage)
     import_mines(settings, engine, storage)
     import_activities(settings, engine, storage)
     storage.store_all()
@@ -152,6 +155,14 @@ def import_activities_record(settings, engine, activity, storage):
         # why the exceptions? 
         activity['MSHA ID'] = '-'
     import_object(activity, activity_column_map, storage)
+
+def import_counties(settings, engine, storage):
+    import csv
+    src_path = os.path.sep.join([settings['canaria.sources'], 'national_county.txt'])
+    with open(src_path, "r") as county_file:
+        counties = csv.DictReader(county_file, delimiter=',')
+        for row in counties:
+            import_object(row, county_column_map, storage)
 
 def import_mines(settings, engine, storage):
     import csv, zipfile
@@ -235,6 +246,14 @@ activity_column_map = {
     'Production (short tons)': ['Activity.production'],
     'Average Employees': ['Activity.average_employees'],
     'Labor Hours': ['Activity.labor_hours'],
+}
+
+county_column_map = {
+    'State': ['County.postal_state'],
+    'State ANSI': ['County.ansi_state'],
+    'County ANSI': ['County.ansi_county'],
+    'County Name': ['County.county_name'],
+    'ANSI Cl': [],
 }
         
 mine_column_map = dict(

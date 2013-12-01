@@ -108,6 +108,15 @@ class Controller(Base):
     id = Column(String(7), primary_key=True)
     name = Column(String(72))
 
+class County(Base):
+    __tablename__ = 'county'
+    id = Column(Integer, primary_key=True)
+    ansi_state = Column(Integer, nullable=False)
+    ansi_county = Column(Integer, nullable=False)
+    postal_state = Column(String(2), nullable=False)
+    state_name = Column(Text, nullable=True)
+    county_name = Column(Text, nullable=False)
+
 class FieldOffice(Base):
     __tablename__ = 'field_office'
     id = Column(String(5), primary_key=True)
