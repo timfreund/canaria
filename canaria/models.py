@@ -35,7 +35,6 @@ class MyModel(Base):
         self.name = name
         self.value = value
 
-
 class Mine(Base):
     __tablename__ = 'mine'
     id = Column(Integer, primary_key=True)
@@ -46,7 +45,12 @@ class Mine(Base):
     status_date = Column(Date)
     controller_id = Column(String(7), ForeignKey('controller.id'), nullable=True)
     controller_start_date = Column(Date)
+    operator_id = Column(String(7), ForeignKey('operator.id'), nullable=True)
     district_id = Column(String(3))
+    field_office_id = Column(String(5), ForeignKey('field_office.id'), nullable=True)
+    state = Column(String(64))
+    county = Column(String(64))
+    fips_county_code = Column(Integer)
     assess_control_number = Column(String(20))
     current_103i_status = Column(String(80))
     current_103i_date = Column(Date)
@@ -104,11 +108,16 @@ class Controller(Base):
     id = Column(String(7), primary_key=True)
     name = Column(String(72))
 
-# class Operator(Base):
-#     pass
+class FieldOffice(Base):
+    __tablename__ = 'field_office'
+    id = Column(String(5), primary_key=True)
+    name = Column(String(64))
 
-# class FieldOffice(Base):
-#     pass
+class Operator(Base):
+    __tablename__ = 'operator'
+    id = Column(String(7), primary_key=True)
+    name = Column(String(64))
+    company_type = Column(String(64))
 
 # class StandardIndustryClassification(Base):
 #     pass

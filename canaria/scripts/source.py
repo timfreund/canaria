@@ -5,7 +5,7 @@ import time
 import transaction
 import urllib2
 from canaria.scripts import usage, bootstrap_script_and_sqlalchemy
-from canaria.models import Activity, Controller, DBSession, Mine
+from canaria.models import *
 from canaria import models
 from datetime import datetime, date, timedelta
 
@@ -66,7 +66,7 @@ class StorageProxy(object):
     def store_all(self):
         transaction.begin()
         log.info("storing all objects")
-        for klass in [Controller, Mine, Activity]:
+        for klass in [Operator, FieldOffice, Controller, Mine, Activity]:
             log.info("%s" % klass.__name__)
             if self.objs.has_key(klass):
                 for obj in self.objs[klass].values():
@@ -246,18 +246,18 @@ mine_column_map = dict(
     CURRENT_STATUS_DT = ['Mine.status_date'],
     CURRENT_CONTROLLER_ID = ['Controller.id', 'Mine.controller_id'],
     CURRENT_CONTROLLER_NAME = ['Controller.name'],
-    # CURRENT_OPERATOR_ID = ['Operator.id', 'Mine.operator_id'],
-    # CURRENT_OPERATOR_NAME = ['Operator.name'],
-    # STATE = ['Operator.state'],
+    CURRENT_OPERATOR_ID = ['Operator.id', 'Mine.operator_id'],
+    CURRENT_OPERATOR_NAME = ['Operator.name'],
+    STATE = ['Mine.state'],
     # BOM_STATE_CD = ['Operator.bom_state_code'],
-    # FIPS_CNTY_CD = ['Operator.fips_county_code'],
-    # FIPS_CNTY_NM = ['Operator.fips_county_name'],
+    FIPS_CNTY_CD = ['Mine.fips_county_code'],
+    FIPS_CNTY_NM = ['Mine.county'],
     # CONG_DIST_CD = ['Operator.cong_dist_code'],
-    # COMPANY_TYPE = ['Operator.company_type'],
+    COMPANY_TYPE = ['Operator.company_type'],
     CURRENT_CONTROLLER_BEGIN_DT = ['Mine.controller_start_date'],
     DISTRICT = ['Mine.district_id'],
-    # OFFICE_CD = ['FieldOffice.id'],
-    # OFFICE_NAME = ['FieldOffice.name'],
+    OFFICE_CD = ['FieldOffice.id'],
+    OFFICE_NAME = ['FieldOffice.name'],
     ASSESS_CTRL_NO = ['Mine.assess_control_number'],
     # PRIMARY_SIC_CD = ['StandardIndustryClassification.id', 'Mine.primary_sic_id'],
     # PRIMARY_SIC = ['StandardIndustryClassification.name'],
