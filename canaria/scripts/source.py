@@ -104,7 +104,9 @@ def download_sources(argv=sys.argv):
     annual_production_url = "http://www.eia.gov/coal/data/public/xls/coalpublic%d.xls"
     source_urls = [annual_production_url % year for year in range(1983, 2012)]
     source_urls.append("http://www.msha.gov/OpenGovernmentData/DataSets/Mines.zip")
+    # http://www.census.gov/geo/reference/codes/cou.html
     source_urls.append("http://www.census.gov/geo/reference/codes/files/national_county.txt")
+    source_urls.append("http://www.census.gov/geo/reference/docs/state.txt")
 
     src_dir = settings['canaria.sources']
     if not os.path.exists(src_dir):
@@ -126,9 +128,11 @@ def import_sources(argv=sys.argv):
     settings, engine = bootstrap_script_and_sqlalchemy(argv)
     storage = StorageProxy()
     import_counties(settings, engine, storage)
-    import_mines(settings, engine, storage)
-    import_activities(settings, engine, storage)
+    # import_mines(settings, engine, storage)
+    # import_activities(settings, engine, storage)
     storage.store_all()
+    # this one is a custom import because it updates existing records
+    # import_states(settings, engine, storage)
 
 def import_activities(settings, engine, storage):
     src_template = os.path.sep.join([settings['canaria.sources'], "coalpublic%d.xls"])
@@ -158,11 +162,24 @@ def import_activities_record(settings, engine, activity, storage):
 
 def import_counties(settings, engine, storage):
     import csv
+    states = preload_states(settings, engine, storage)
+
     src_path = os.path.sep.join([settings['canaria.sources'], 'national_county.txt'])
     with open(src_path, "r") as county_file:
         counties = csv.DictReader(county_file, delimiter=',')
         for row in counties:
+            row['state_name'] = states[row['State']]
             import_object(row, county_column_map, storage)
+
+def preload_states(settings, engine, storage):
+    import csv
+    rc = {}
+    src_path = os.path.sep.join([settings['canaria.sources'], 'state.txt'])
+    with open(src_path, "r") as state_file:
+        states = csv.DictReader(state_file, delimiter='|')
+        for row in states:
+            rc[row['STUSAB']] = row['STATE_NAME']
+    return rc
 
 def import_mines(settings, engine, storage):
     import csv, zipfile
@@ -233,8 +250,8 @@ activity_column_map = {
     'Year': ['Activity.year'],
     'MSHA ID': ['Mine.id', 'Activity.mine_id'],
     'Mine Name': ['Activity.mine_name'],
-    'Mine State': ['Activity.state'],
-    'Mine County': ['Activity.county'],
+    'Mine State': ['Activity.provided_state'],
+    'Mine County': ['Activity.provided_county'],
     'Mine Basin': ['Activity.basin'],
     'Mine Status': ['Activity.status'],
     'Mine Type': ['Activity.mine_type'],
@@ -254,6 +271,7 @@ county_column_map = {
     'County ANSI': ['County.ansi_county'],
     'County Name': ['County.county_name'],
     'ANSI Cl': [],
+    'state_name': ['County.state_name']
 }
         
 mine_column_map = dict(
@@ -267,10 +285,10 @@ mine_column_map = dict(
     CURRENT_CONTROLLER_NAME = ['Controller.name'],
     CURRENT_OPERATOR_ID = ['Operator.id', 'Mine.operator_id'],
     CURRENT_OPERATOR_NAME = ['Operator.name'],
-    STATE = ['Mine.state'],
+    STATE = ['Mine.provided_state'],
     # BOM_STATE_CD = ['Operator.bom_state_code'],
     FIPS_CNTY_CD = ['Mine.fips_county_code'],
-    FIPS_CNTY_NM = ['Mine.county'],
+    FIPS_CNTY_NM = ['Mine.provided_county'],
     # CONG_DIST_CD = ['Operator.cong_dist_code'],
     COMPANY_TYPE = ['Operator.company_type'],
     CURRENT_CONTROLLER_BEGIN_DT = ['Mine.controller_start_date'],
