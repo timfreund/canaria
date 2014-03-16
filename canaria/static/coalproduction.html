@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Coal Production</title>
+    <script type="text/javascript" src="./js/vendor/d3.v3.min.js"></script>
+    <script type="text/javascript" src="./js/vendor/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="./js/coalproduction.js"></script>
+    <style>
+      div.bar {
+        display: inline-block;
+        width: 20px;
+        height: 10px;
+        background-color: #333366;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Coal Production from 1983 through 2011</h1>
+    <div id="vis"></div>
+
+    <script>
+      fetchData(1992, "Pennsylvania", null, "county");
+    </script>
+  </body>
+</html>

@@ -34,6 +34,11 @@ class AnonymousViews(BrowserView):
     def home(self):
         return {}
 
+class DemoViews(BrowserView):
+    @view_config(renderer='templates/demo_map.pt', route_name='demo_map')
+    def map(self):
+        return {}
+
 @view_defaults(renderer='json')
 class CoalProductionViews(ViewObject):
     @view_config(route_name='coalproduction_by_us')

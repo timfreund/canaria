@@ -1,0 +1,28 @@
+<metal:main_template use-macro="view.main_template">
+  <style metal:fill-slot="css">
+    .state-boundary {
+      fill: #f9f9f9;
+      stroke: #333333;
+    }
+  </style>
+
+  <div metal:fill-slot="jsload">
+    <script src="${request.static_url('canaria:static/js/d3.v3.min.js')}"></script>
+    <script src="${request.static_url('canaria:static/js/topojson.v1.min.js')}"></script>
+    <script src="${request.static_url('canaria:static/js/map.js')}"></script>
+    <script src="${request.static_url('canaria:static/js/jquery.tidy.table.min.js')}"></script>
+    <link rel="stylesheet" href="${request.static_url('canaria:static/css/jquery.tidy.table.min.css')}" type="text/css" media="screen" charset="utf-8"/>
+    <script>
+        executeMapDemo();
+    </script>
+  </div>
+
+  <div metal:fill-slot="body">
+    <h1>Coal Production Map</h1>
+    <p>Select a data value</p>
+    <ul>
+      <li><a href="javascript:renderData('production');">production</a> (default)</li>
+      <li><a href="javascript:renderData('average_employees');">average_employees</a></li>
+      <li><a href="javascript:renderData('labor_hours');">labor_hours</a></li>
+  </div>
+</metal:main_template>
