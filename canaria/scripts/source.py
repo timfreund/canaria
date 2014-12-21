@@ -102,7 +102,7 @@ def download_sources(argv=sys.argv):
         print "Please set it to a directory for local data source storage."
     
     annual_production_url = "http://www.eia.gov/coal/data/public/xls/coalpublic%d.xls"
-    source_urls = [annual_production_url % year for year in range(1983, 2012)]
+    source_urls = [annual_production_url % year for year in range(1983, 2013)]
     source_urls.append("http://www.msha.gov/OpenGovernmentData/DataSets/Mines.zip")
     # http://www.census.gov/geo/reference/codes/cou.html
     source_urls.append("http://www.census.gov/geo/reference/codes/files/national_county.txt")
