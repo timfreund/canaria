@@ -128,11 +128,9 @@ def import_sources(argv=sys.argv):
     settings, engine = bootstrap_script_and_sqlalchemy(argv)
     storage = StorageProxy()
     import_counties(settings, engine, storage)
-    # import_mines(settings, engine, storage)
-    # import_activities(settings, engine, storage)
+    import_mines(settings, engine, storage)
+    import_activities(settings, engine, storage)
     storage.store_all()
-    # this one is a custom import because it updates existing records
-    # import_states(settings, engine, storage)
 
 def import_activities(settings, engine, storage):
     src_template = os.path.sep.join([settings['canaria.sources'], "coalpublic%d.xls"])
@@ -152,6 +150,10 @@ def import_activities_file(settings, engine, tree, storage):
         activity = {}
         for k, v in zip(headers, values):
             activity[k] = v
+        # Some states are split into ad hoc regions.
+        # - KY (East vs West)
+        # - PA (Anthracite vs bituminous)
+        activity['state'] = activity['Mine State'].split(" (", 1)[0]
         import_activities_record(settings, engine, activity, storage)
 
 def import_activities_record(settings, engine, activity, storage):
@@ -250,6 +252,7 @@ activity_column_map = {
     'Year': ['Activity.year'],
     'MSHA ID': ['Mine.id', 'Activity.mine_id'],
     'Mine Name': ['Activity.mine_name'],
+    'state': ['Activity.state'],
     'Mine State': ['Activity.provided_state'],
     'Mine County': ['Activity.provided_county'],
     'Mine Basin': ['Activity.basin'],
@@ -285,7 +288,7 @@ mine_column_map = dict(
     CURRENT_CONTROLLER_NAME = ['Controller.name'],
     CURRENT_OPERATOR_ID = ['Operator.id', 'Mine.operator_id'],
     CURRENT_OPERATOR_NAME = ['Operator.name'],
-    STATE = ['Mine.provided_state'],
+    STATE = ['Mine.state'],
     # BOM_STATE_CD = ['Operator.bom_state_code'],
     FIPS_CNTY_CD = ['Mine.fips_county_code'],
     FIPS_CNTY_NM = ['Mine.provided_county'],
